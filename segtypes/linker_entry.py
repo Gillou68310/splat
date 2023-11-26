@@ -7,6 +7,7 @@ from typing import Dict, List, OrderedDict, Set, Tuple, Union
 from util import options
 
 from segtypes.segment import Segment
+from segtypes.common import common
 from util.symbols import to_cname
 
 
@@ -611,7 +612,9 @@ class LinkerWriter:
             )
             self._write_symbol(path_cname, ".")
 
-        if entry.noload and entry.bss_contains_common:
+        if entry.noload and isinstance(entry.segment, common.CommonSegCommon) and not entry.segment.extract:
+            self._writeln(f"{entry.object_path}(COMMON .scommon);")
+        elif entry.noload and entry.bss_contains_common:
             self._writeln(f"{entry.object_path}(.bss COMMON .scommon);")
         else:
             wildcard = "*" if options.opts.ld_wildcard_sections else ""
